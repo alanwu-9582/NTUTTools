@@ -1,0 +1,55 @@
+{
+  "title": "NTUTTools",
+  "tagline": "北科大工具箱",
+  "description": "北科大線上工具箱，就一些工具...",
+  "language": "zh-Hant",
+  "siteUrl": "",
+  "repo": "",
+  "logo": "assets/images/icon.png",
+  "links": [
+    {
+      "label": "課程系統",
+      "url": "https://aps.ntut.edu.tw/course/tw/course.jsp"
+    },
+    {
+      "label": "校務系統",
+      "url": "https://nportal.ntut.edu.tw/"
+    }
+  ],
+  "categories": {
+    "course": {
+      "label": "課務",
+      "color": "#7ba7a7"
+    },
+    "grade": {
+      "label": "成績",
+      "color": "#87d1ff"
+    },
+    "life": {
+      "label": "生活",
+      "color": "#ffd8a4"
+    }
+  },
+  "tags": {
+    "classroom": {
+      "label": "教室",
+      "color": "#7ba7a7"
+    },
+    "timetable": {
+      "label": "課表",
+      "color": "#87d1ff"
+    },
+    "credit": {
+      "label": "學分",
+      "color": "#7dff95"
+    },
+    "gpa": {
+      "label": "GPA",
+      "color": "#ffbc5e"
+    },
+    "class": {
+      "label": "班級",
+      "color": "#7dff95"
+    }
+  }
+}

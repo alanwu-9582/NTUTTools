@@ -1,0 +1,284 @@
+/* css/tools.css — 工具共用的控制項與版面。
+   顏色一律走 theme.css 的變數, 這裡不寫死任何色碼。 */
+
+/* ================= 佔位與外框 ================= */
+.tool-slot {
+  margin: 0;
+}
+.tool-slot.is-loading::before {
+  content: "載入工具…";
+  display: block;
+  padding: 26px 18px;
+  text-align: center;
+  font-size: var(--text-supporting);
+  color: var(--text-dim);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--cffy-theme-surface-a0);
+}
+/* 掛載前的備援文字（沒有 JavaScript 時會一直留著）。 */
+.tool-slot:not([data-tool-ready]) > * { margin-block: 0; }
+
+.tool-panel {
+  display: flex;
+  flex-direction: column;
+  /* 同一段裡的東西靠緊一點；段落之間的距離由 .tool-subhead 自己撐開。 */
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--cffy-theme-surface-a0);
+  font-size: var(--text-tool);
+  line-height: 1.6;
+}
+
+/* 一排裡的欄位平分寬度, 放不下就換行。 */
+.tool-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 22px 18px;
+  align-items: start;
+}
+/* display: grid 會蓋掉 UA 的 [hidden] { display: none }, 所以要自己補回來。 */
+.tool-row[hidden], .tool-field[hidden], .tool-actions[hidden], .tool-out[hidden] { display: none; }
+/* 同一排的欄位共用「標籤／控制項／說明」三條列軌, 
+   有說明文字的欄位就不會把自己的輸入框往上頂 —— 一排的輸入框一定切齊。 */
+@supports (grid-template-rows: subgrid) {
+  .tool-row > .tool-field {
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+  }
+}
+.tool-row > .tool-block { min-width: 0; }
+
+.tool-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.tool-subhead {
+  font-size: var(--text-section);
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 8px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border-soft);
+}
+.tool-panel > .tool-subhead:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+
+/* ================= 欄位 ================= */
+/* 三列: 標籤、控制項、說明。沒有說明時第三列高度是 0, 不佔位。 */
+.tool-field {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  align-content: start;
+  row-gap: 10px;
+  min-width: 0;
+}
+.tool-field-label {
+  font-size: var(--text-label);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  align-self: end;
+  margin-top: 4px;
+}
+.tool-field-hint {
+  font-size: var(--text-supporting);
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.tool-input,
+.tool-textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: var(--text-tool);
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 13px;
+}
+.tool-input { height: var(--control-height); }
+select.tool-input { cursor: pointer; }
+.tool-textarea { resize: vertical; min-height: 90px; }
+.is-mono {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  /* 數字對齊, 換算結果一列一列看下來才不會跳。 */
+  font-variant-numeric: tabular-nums;
+}
+.tool-input:focus, .tool-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(var(--rgb-primary-light), 0.3);
+}
+.tool-input.is-invalid, .tool-textarea.is-invalid {
+  border-color: color-mix(in srgb, var(--critical) 60%, transparent);
+}
+/* 數字輸入的上下箭頭在這裡只會擋路。 */
+.tool-input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+.tool-input[type="number"]::-webkit-outer-spin-button,
+.tool-input[type="number"]::-webkit-inner-spin-button { appearance: none; margin: 0; }
+
+/* ================= 分頁鈕 ================= */
+.tool-segmented {
+  display: inline-flex;
+  padding: 4px;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+}
+.tool-seg {
+  font-family: inherit;
+  font-size: var(--text-label);
+  font-weight: 600;
+  padding: 8px 17px;
+  border: none;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--easing-standard),
+              color var(--duration-fast) var(--easing-standard);
+}
+.tool-seg:hover { color: var(--text); }
+.tool-seg:focus-visible { outline: var(--focus-ring); outline-offset: 1px; }
+.tool-seg.is-active { background: var(--primary); color: var(--on-primary); }
+
+/* ================= 結果 ================= */
+.tool-out {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 12px 11px 15px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+}
+.tool-out-label {
+  flex: 0 0 auto;
+  min-width: 92px;
+  font-size: var(--text-label);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.tool-out-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--text);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.tool-out.is-empty .tool-out-value::before {
+  content: "—";
+  color: var(--text-dim);
+}
+/* 一整組結果列疊在一起時的間距。 */
+.tool-outs { display: flex; flex-direction: column; gap: 8px; }
+
+.tool-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  font-family: inherit;
+  font-size: var(--text-supporting);
+  font-weight: 600;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg-alt);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--easing-standard),
+              border-color var(--duration-fast) var(--easing-standard),
+              background var(--duration-fast) var(--easing-standard);
+}
+.tool-copy:hover { color: var(--text); border-color: var(--cffy-theme-surface-a40); background: var(--border); }
+.tool-copy:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+.tool-copy .tool-copy-ico { display: inline-flex; align-items: center; }
+.tool-copy.is-copied {
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 45%, transparent);
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+}
+
+.tool-status {
+  margin: 0;
+  font-size: var(--text-label);
+  font-weight: 600;
+}
+.tool-status[hidden] { display: none; }
+.tool-status.is-ok { color: var(--success); }
+.tool-status.is-warn { color: var(--warning); }
+.tool-status.is-error { color: var(--critical); }
+
+.tool-note {
+  margin: 0;
+  font-size: var(--text-supporting);
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+/* ================= 其他共用的小東西 ================= */
+/* 一次列出一整排結果（字數統計那種）。 */
+.tool-convert-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 8px;
+}
+
+@media (max-width: 560px) {
+  .tool-panel { padding: 16px; }
+  .tool-out { flex-wrap: wrap; }
+  .tool-out-label { min-width: 0; flex-basis: 100%; }
+  .tool-copy .tool-copy-label { display: none; }
+}
+
+@media (pointer: coarse) {
+  .tool-copy, .tool-seg, .tool-flag { min-height: var(--hit-min); }
+}
+
+.tool-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+  font-size: var(--text-supporting);
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.tool-flag > span {
+  padding: 5px 12px;
+  border-radius: var(--radius-xs);
+  transition: background var(--duration-fast) var(--easing-standard),
+              color var(--duration-fast) var(--easing-standard);
+}
+.tool-flag:hover > span { color: var(--text); }
+.tool-flag:has(.tool-check:checked) > span {
+  color: var(--on-primary);
+  background: var(--primary);
+}
+.tool-flag:has(.tool-check:focus-visible) {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+.tool-check {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}

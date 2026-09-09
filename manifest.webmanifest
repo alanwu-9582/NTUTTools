@@ -1,0 +1,20 @@
+{
+  "name": "NTUTTools",
+  "short_name": "NTUTTools",
+  "description": "給北科大學生的線上小工具。",
+  "start_url": "./#/home",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#121212",
+  "theme_color": "#166f71",
+  "lang": "zh-Hant",
+  "icons": [
+    {
+      "src": "assets/images/icon.png",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

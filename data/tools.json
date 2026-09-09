@@ -1,0 +1,37 @@
+{
+  "tools": [
+    {
+      "id": "room-info",
+      "title": "教室資訊",
+      "description": "查詢空教室與教室課表。",
+      "category": "course",
+      "tags": [
+        "classroom",
+        "timetable"
+      ],
+      "icon": "grid"
+    },
+    {
+      "id": "class-schedule",
+      "title": "班級課表",
+      "description": "依學院與系所查詢班級的課表與課程清單。",
+      "category": "course",
+      "tags": [
+        "timetable",
+        "class"
+      ],
+      "icon": "calendar"
+    },
+    {
+      "id": "credit-master",
+      "title": "學分大師",
+      "description": "手動輸入分數, 計算 GPA 與各類學分, 逐項對照畢業門檻。",
+      "category": "grade",
+      "tags": [
+        "credit",
+        "gpa"
+      ],
+      "icon": "book"
+    }
+  ]
+}

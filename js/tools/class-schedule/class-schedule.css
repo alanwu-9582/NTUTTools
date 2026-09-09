@@ -1,0 +1,143 @@
+/* js/tools/class-schedule/class-schedule.css — 班級課表。
+   課表格線本身在 ../timetable.css。 */
+
+.cs-board { display: flex; flex-direction: column; gap: 20px; }
+
+.cs-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: var(--text-label);
+  color: var(--text-muted);
+}
+.cs-count strong { color: var(--text); font-size: 16px; }
+
+/* 系所下拉會隨學院重建, 這個容器讓它在 .tool-field 的格線裡佔一整格。 */
+.cs-dept-slot { display: block; min-width: 0; }
+
+/* ================= 班級清單 ================= */
+/* 294 個班級。依學院分組再排成一片小標籤, 掃起來比 294 列清單快。 */
+.cs-results { display: flex; flex-direction: column; gap: 18px; }
+.cs-group { display: flex; flex-direction: column; gap: 8px; }
+.cs-group-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: var(--text-label);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.cs-group-count { font-size: var(--text-caption); font-weight: 600; color: var(--text-dim); }
+
+.cs-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.cs-chip {
+  font-family: inherit;
+  font-size: var(--text-label);
+  font-weight: 600;
+  padding: 8px 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--easing-standard),
+              background var(--duration-fast) var(--easing-standard);
+}
+.cs-chip:hover { border-color: var(--primary); background: var(--card-bg-alt); }
+.cs-chip:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+
+/* ================= 單一班級 ================= */
+.cs-detail { display: flex; flex-direction: column; gap: 20px; }
+
+.cs-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 7px;
+  margin-left: -7px;
+  font: inherit;
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}
+.cs-back:hover { color: var(--text); background: var(--card-bg-alt); }
+.cs-back:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+
+.cs-detail-head { display: flex; flex-direction: column; gap: 4px; }
+.cs-detail-name { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.2; }
+.cs-detail-dept { font-size: var(--text-label); color: var(--text-muted); }
+.cs-detail-stats { font-size: var(--text-supporting); color: var(--text-dim); }
+
+/* ---------- 課程清單 ---------- */
+.cs-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+}
+.cs-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  min-width: 720px;
+  font-size: var(--text-supporting);
+}
+.cs-table th,
+.cs-table td {
+  padding: 9px 11px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border-soft);
+}
+.cs-table tbody tr:last-child > td { border-bottom: none; }
+.cs-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--card-bg-alt);
+  color: var(--text-muted);
+  font-size: var(--text-label);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.cs-table tbody tr:hover > td { background: var(--card-bg); }
+.cs-table .is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.cs-snum { font-family: var(--font-mono); font-size: var(--text-caption); color: var(--text-dim); }
+.cs-when { font-family: var(--font-mono); white-space: nowrap; }
+
+/* 完整修別名稱。必修用主色, 選修留灰。 */
+.cs-req {
+  display: inline-flex;
+  align-items: center;
+  min-width: 7em;
+  font-size: var(--text-label);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.cs-req.is-must { color: var(--interactive); font-weight: 700; }
+
+.cs-note,
+.cs-lang {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--text-caption);
+  line-height: 1.4;
+  color: var(--text-dim);
+}
+.cs-lang { color: var(--cffy-theme-info-a0); }
+
+@media (max-width: 560px) {
+  .cs-detail-name { font-size: 19px; }
+  .cs-chips { gap: 6px; }
+}
+
+@media (pointer: coarse) {
+  .cs-chip { min-height: var(--hit-min); }
+}

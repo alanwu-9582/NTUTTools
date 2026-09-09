@@ -1,0 +1,161 @@
+/* js/tools/timetable.css — 課表格線, 教室資訊與班級課表共用。
+   顏色一律走 theme.css 的變數。 */
+
+/* 表格比螢幕寬是正常的（7 天 × 14 節）, 讓它自己橫向捲, 別把整頁撐開。 */
+.tt-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--cffy-theme-surface-a0);
+}
+.tt-grid {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  min-width: 760px;
+  font-size: var(--text-supporting);
+}
+.tt-grid th,
+.tt-grid td {
+  border-right: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 7px 9px;
+  vertical-align: top;
+  text-align: left;
+}
+.tt-grid tr > :last-child { border-right: none; }
+.tt-grid tbody tr:last-child > * { border-bottom: none; }
+
+.tt-grid thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--card-bg-alt);
+  color: var(--text-muted);
+  font-size: var(--text-label);
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+.tt-grid thead th.is-today { color: var(--interactive); }
+
+/* 節次欄固定在左邊, 橫向捲的時候還看得出現在看的是第幾節。 */
+.tt-period {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 104px;
+  min-width: 104px;
+  background: var(--card-bg-alt);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.tt-grid thead .tt-period { z-index: 3; }
+.tt-period-key { display: block; font-weight: 700; font-size: var(--text-label); color: var(--text); }
+.tt-period-time {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--text-dim);
+}
+
+/* ---------- 格子 ---------- */
+/* 空堂是深色底, 有課是壓深的主題色底 —— 一眼掃過去就看得出哪裡是空的。 */
+.tt-grid td { min-width: 96px; }
+.tt-grid td.is-free { background: var(--slot-free); }
+.tt-grid td.is-busy { background: var(--slot-busy); }
+.tt-grid td.is-pickable { cursor: pointer; }
+.tt-grid td.is-pickable:hover { background: var(--slot-busy-hover); }
+.tt-grid td.is-pickable:focus-visible { outline: var(--focus-ring); outline-offset: -2px; }
+/* 現在那一格用外框標, 不動底色 —— 底色還要負責表達空／忙。 */
+.tt-grid td.is-now { box-shadow: inset 0 0 0 2px var(--interactive); }
+
+.tt-item { display: flex; flex-direction: column; gap: 1px; }
+.tt-item + .tt-item {
+  border-top: 1px dashed color-mix(in srgb, var(--cffy-theme-light-a0) 22%, transparent);
+  margin-top: 5px;
+  padding-top: 5px;
+}
+.tt-item-name {
+  font-size: var(--text-supporting);
+  font-weight: 600;
+  color: var(--cffy-theme-light-a0);
+  line-height: 1.35;
+}
+.tt-item-sub {
+  font-size: var(--text-caption);
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--cffy-theme-light-a0) 72%, transparent);
+}
+
+/* ---------- 挑時段的格線 ---------- */
+/* 挑時段時整張表都在等人按, 所以格子預設就是可按的樣子。
+   這張表通常擺在對話框裡, 所以每一格都比檢視用的課表小一號 ——
+   14 節 × 7 天要在一個畫面裡看完, 不然選到一半就得捲。 */
+.tt-wrap.is-picker .tt-grid { min-width: 460px; font-size: var(--text-caption); }
+.tt-wrap.is-picker th,
+.tt-wrap.is-picker td { padding: 3px 6px; }
+.tt-wrap.is-picker .tt-period { width: 88px; min-width: 88px; }
+.tt-wrap.is-picker .tt-period-key { font-size: var(--text-supporting); }
+/* min-width 要跟著 .tt-grid td 一樣的層級寫, 不然檢視用課表的 96px 會蓋過來。 */
+.tt-wrap.is-picker .tt-grid td { min-width: 56px; }
+.tt-pick {
+  background: var(--slot-free);
+  cursor: pointer;
+  height: 26px;
+  transition: background var(--duration-fast) var(--easing-standard);
+}
+.tt-pick:hover { background: var(--cffy-theme-surface-a20); }
+.tt-pick:focus-visible { outline: var(--focus-ring); outline-offset: -2px; }
+.tt-pick.is-picked { background: var(--slot-busy); }
+.tt-pick.is-picked:hover { background: var(--slot-busy-hover); }
+/* 選到的格子畫一個勾, 不然只靠底色在色弱的眼裡分不出來。 */
+.tt-pick.is-picked::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 14px;
+  background: var(--cffy-theme-light-a0);
+  -webkit-mask: url("../../assets/icons/check.svg") center / 14px no-repeat;
+  mask: url("../../assets/icons/check.svg") center / 14px no-repeat;
+}
+
+/* 星期表頭與節次列首兼「整欄／整列」開關。 */
+.tt-bulk {
+  display: block;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  text-align: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}
+.tt-bulk:hover { color: var(--interactive); }
+.tt-bulk:focus-visible { outline: var(--focus-ring); outline-offset: 1px; }
+
+/* ---------- 圖例 ---------- */
+.tt-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: var(--text-supporting);
+  color: var(--text-dim);
+}
+.tt-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.tt-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-soft);
+}
+.tt-swatch.is-free { background: var(--slot-free); }
+.tt-swatch.is-busy { background: var(--slot-busy); }
+
+@media (max-width: 560px) {
+  .tt-period { width: 84px; min-width: 84px; }
+  .tt-grid { min-width: 700px; }
+}

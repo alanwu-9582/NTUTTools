@@ -1,0 +1,136 @@
+/* css/theme.css — 全站唯一的顏色、字體、尺寸來源。
+   任何顏色都必須經過這裡的變數, 元件樣式不直接寫死色碼。 */
+
+:root {
+  /** Base text colors */
+  --cffy-theme-light-a0: #ffffff;
+  --cffy-theme-dark-a0: #000000;
+
+  /** Theme primary colors */
+  --cffy-theme-primary-a0: #166f71;
+  --cffy-theme-primary-a10: #367d7e;
+  --cffy-theme-primary-a20: #4f8b8c;
+  --cffy-theme-primary-a30: #659999;
+  --cffy-theme-primary-a40: #7ba7a7;
+  --cffy-theme-primary-a50: #91b5b6;
+
+  /** Theme surface colors */
+  --cffy-theme-surface-a0: #121212;
+  --cffy-theme-surface-a10: #252525;
+  --cffy-theme-surface-a20: #393939;
+  --cffy-theme-surface-a30: #4f4f4f;
+  --cffy-theme-surface-a40: #666666;
+  --cffy-theme-surface-a50: #7d7d7d;
+
+  /** Success colors */
+  --cffy-theme-success-a0: #7dff95;
+  --cffy-theme-success-a10: #9dffac;
+  --cffy-theme-success-a20: #b8ffc1;
+
+  /** Warning colors */
+  --cffy-theme-warning-a0: #ffbc5e;
+  --cffy-theme-warning-a10: #ffca83;
+  --cffy-theme-warning-a20: #ffd8a4;
+
+  /** Danger colors */
+  --cffy-theme-danger-a0: #ff8080;
+  --cffy-theme-danger-a10: #ff9b99;
+  --cffy-theme-danger-a20: #ffb5b2;
+
+  /** Info colors */
+  --cffy-theme-info-a0: #87d1ff;
+  --cffy-theme-info-a10: #a1dbff;
+  --cffy-theme-info-a20: #b9e4ff;
+
+  /** Semantic aliases */
+  --bg: var(--cffy-theme-surface-a0);
+  --nav-bg: var(--cffy-theme-surface-a10);
+  --card-bg: var(--cffy-theme-surface-a10);
+  --card-bg-alt: var(--cffy-theme-surface-a20);
+  --border: var(--cffy-theme-surface-a30);
+  --border-soft: var(--cffy-theme-surface-a20);
+  --text: var(--cffy-theme-light-a0);
+  /* 小字輔助文字在 #121212 / #252525 上都維持 WCAG AA。 */
+  --text-muted: #a0a0a0;
+  --text-dim: #8a8a8a;
+  --primary: var(--cffy-theme-primary-a0);
+  --primary-hover: var(--cffy-theme-primary-a10);
+  /* 主色是深青, 實心填底時配白字約 5.9:1。 */
+  --on-primary: var(--cffy-theme-light-a0);
+  /* 主色當文字用時提亮兩階, 在 #121212 上約 7:1。 */
+  --interactive: var(--cffy-theme-primary-a40);
+  --link: var(--cffy-theme-info-a0);
+  --success: var(--cffy-theme-success-a0);
+  --warning: var(--cffy-theme-warning-a0);
+  --critical: var(--cffy-theme-danger-a0);
+  --info: var(--cffy-theme-info-a0);
+  --disabled: var(--cffy-theme-surface-a40);
+  --app-chrome-bg: var(--cffy-theme-surface-a10);
+
+  /* 半透明表面用的 rgb 分量, 仍集中管理在這裡。 */
+  --rgb-primary: 22, 111, 113;
+  --rgb-primary-light: 123, 167, 167;
+  --rgb-info: 135, 209, 255;
+  --rgb-success: 125, 255, 149;
+  --rgb-warning: 255, 188, 94;
+  --rgb-danger: 255, 128, 128;
+
+  /* 圓角級距。全站規則: 圓角不超過該元素短邊的 1/3,
+     所以沒有膠囊（999px）或正圓（50%）圓角, 除非另有註記。 */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --gap: 16px;
+
+  /** Fonts */
+  --font-family: "TASA Explorer", "TASA Orbiter", "IBM Plex Sans JP", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  /* Typography scale */
+  --text-caption: 11.5px;
+  --text-supporting: 13px;
+  --text-body: 14px;
+  --text-label: 13.5px;
+  --text-section: 16px;
+  --text-title: 26px;
+  /* 工具的操作介面比內文再大半階 —— 這些是真的要點、要讀數字的東西。 */
+  --text-tool: 15px;
+
+  /* Control sizes / touch target */
+  --control-height: 42px;
+  --hit-min: 44px;
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-default: 180ms;
+  --easing-standard: ease;
+
+  /* 課表格子: 空堂用深色底, 有課用壓深的主題色底（白字約 8.7:1）。 */
+  --slot-free: var(--cffy-theme-surface-a0);
+  --slot-busy: color-mix(in srgb, var(--cffy-theme-primary-a0) 40%, var(--cffy-theme-surface-a0));
+  --slot-busy-hover: color-mix(in srgb, var(--cffy-theme-primary-a0) 88%, var(--cffy-theme-surface-a0));
+
+  /* Focus ring / overlays */
+  --color-focus: var(--cffy-theme-info-a0);
+  --focus-ring: 2px solid var(--color-focus);
+  --overlay-scrim: rgba(0, 0, 0, 0.6);
+  --surface-selected: rgba(var(--rgb-primary-light), 0.14);
+
+  /* Z-index scale */
+  --z-nav: 5;
+  --z-progress: 50;
+  --z-overlay: 100;
+  --z-toast: 200;
+}

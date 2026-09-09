@@ -1,0 +1,569 @@
+/* js/tools/credit-master/credit-master.css — 學分大師。 */
+
+.cm-board { margin-top: var(--space-6); font-size: var(--text-body); }
+
+/*
+ * 段落之間鬆一點。原本各區塊只隔 16px, 小標、表格、卡片全部黏在一起, 
+ * 一整頁看下來分不出哪裡是一段的開頭。
+ */
+.cm-board > div > .tool-subhead { margin-top: var(--space-8); }
+.cm-board > div > .tool-subhead:first-child { margin-top: 0; }
+.cm-board .tool-note { margin-top: var(--space-2); line-height: 1.7; }
+.cm-board .tool-actions { margin-top: var(--space-4); }
+
+/* 切換鈕不要撐滿整個欄位。.tool-field 是 grid, 預設會把子元素拉到滿寬, 
+   結果外框比按鈕本身寬一大截。 */
+.tool-segmented.cm-seg {
+  justify-self: start;
+  padding: 2px;
+}
+.tool-segmented.cm-seg .tool-seg { padding: 5px 12px; }
+
+/* ---------- 總覽卡片 ---------- */
+
+.cm-cards {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  margin-bottom: var(--space-6);
+}
+
+.cm-card {
+  padding: var(--space-3);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--card-bg-alt);
+}
+.cm-card-label { color: var(--text-muted); font-size: var(--text-supporting); }
+.cm-card-value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.cm-card-note { color: var(--text-muted); font-size: var(--text-supporting); }
+
+/* ---------- 表格 ---------- */
+
+.cm-table {
+  width: 100%;
+  margin-bottom: var(--space-5);
+  border-collapse: collapse;
+  font-size: var(--text-body);
+}
+/* 內文表格的共用規則 specificity 較高，這裡要明確保留工具表格的段落間距。 */
+.cm-table { margin-bottom: var(--space-4); }
+.cm-table th,
+.cm-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-soft);
+  text-align: left;
+}
+.cm-table th {
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cm-table td.is-num,
+.cm-table th.is-num { font-family: var(--font-mono); text-align: right; }
+.cm-table tr.cm-total td { border-top: 1px solid var(--border); font-weight: 700; }
+.cm-cat { color: var(--text-muted); font-size: 12.5px; }
+
+/* 成績輸入表: 及格淡綠、不及格淡紅, 一眼掃得出來。 */
+.cm-input tr.is-pass td:first-child { box-shadow: inset 3px 0 0 var(--success); }
+.cm-input tr.is-fail td:first-child { box-shadow: inset 3px 0 0 var(--critical); }
+.cm-input tr.is-fail { background: rgb(var(--rgb-danger) / 0.06); }
+
+.cm-score {
+  width: 76px;
+  min-width: 76px;
+  max-width: 76px;
+  padding-inline: 10px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  appearance: textfield;
+}
+.cm-input td.is-num .cm-score { margin-left: auto; }
+/* 平板瀏覽器的原生微調按鈕會蓋住兩位數分數；觸控輸入仍保留數字鍵盤。 */
+.cm-score::-webkit-inner-spin-button,
+.cm-score::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+.cm-mark {
+  margin-left: 4px;
+  color: var(--warning);
+  font-size: 11px;
+}
+.cm-hint { color: var(--text-muted); font-size: 12.5px; font-weight: 400; }
+
+/* ---------- 進度條 ---------- */
+
+.cm-bar {
+  overflow: hidden;
+  min-width: 60px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--card-bg-alt);
+}
+.cm-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--interactive);
+}
+
+.cm-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2em;
+  color: var(--critical);
+  font-weight: 700;
+  text-align: center;
+}
+.cm-flag.is-ok { color: var(--success); }
+
+/* ---------- 規則卡 ---------- */
+
+.cm-rules {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin-bottom: var(--space-5);
+}
+
+.cm-rule {
+  padding: var(--space-3);
+  border: 1px solid var(--border-soft);
+  border-left: 3px solid var(--critical);
+  border-radius: var(--radius);
+  background: var(--card-bg-alt);
+}
+.cm-rule.is-ok { border-left-color: var(--success); }
+
+.cm-rule-head {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.cm-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.cm-chip {
+  padding: 2px 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+/* 已通過的用實心、修過但沒過的描邊紅 —— 兩者的意思差很多。 */
+.cm-chip.is-ok {
+  border-color: transparent;
+  background: var(--success);
+  color: var(--cffy-theme-dark-a0, #111);
+  font-weight: 600;
+}
+.cm-chip.is-taken { border-color: var(--critical); color: var(--critical); }
+
+.cm-dims { display: flex; flex-direction: column; gap: 3px; margin-top: 8px; }
+.cm-dim {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  font-size: 12px;
+}
+/* 撐開的是向度名稱, 不是前面那個勾叉。第一個 span 是 .cm-flag, 
+   對它下 flex:1 會把名稱與學分整組推到最右邊, 中間開一個大洞。 */
+.cm-dim .cm-flag { flex: 0 0 auto; }
+.cm-dim-name { flex: 1; }
+
+/* ---------- 還差什麼 ---------- */
+
+.cm-blockers {
+  margin-bottom: var(--space-6);
+  padding: var(--space-3);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--card-bg-alt);
+}
+.cm-blockers-head { margin-bottom: 6px; color: var(--warning); font-size: 12px; font-weight: 600; }
+.cm-blockers ul { margin: 0; padding-left: 1.3em; }
+.cm-blockers li { color: var(--text-muted); font-size: 12px; line-height: 1.7; }
+
+/* ---------- 趨勢圖 ---------- */
+
+.cm-chart-wrap {
+  padding: var(--space-4);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--card-bg-alt);
+}
+/* 提示框是絕對定位的 HTML, 這一層是它的定位參考。 */
+.cm-chart-plot { position: relative; }
+.cm-chart { display: block; overflow: visible; }
+.cm-chart:focus-visible { outline: var(--focus-ring); outline-offset: 3px; }
+.cm-grid { stroke: var(--border-soft); stroke-width: 1; }
+.cm-axis {
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.cm-line-gpa polyline { fill: none; stroke: var(--info); stroke-width: 2; }
+.cm-line-gpa circle { fill: var(--info); }
+.cm-line-score polyline { fill: none; stroke: var(--warning); stroke-width: 2; stroke-dasharray: 5 3; }
+.cm-line-score circle { fill: var(--warning); }
+/* 指到的那一個學期把點放大, 兩條線一起 —— 才看得出是同一個學期。 */
+.cm-chart circle { transition: r var(--duration-fast) var(--easing-standard); }
+.cm-chart circle.is-active { r: 5.5; stroke: var(--cffy-theme-surface-a0); stroke-width: 2; }
+
+/* 每個學期一塊透明觸發區, 不用精準指到那個小圓點。 */
+.cm-hit { fill: transparent; }
+
+/* 垂直指標線。沒有指到任何學期時整條收起來。 */
+.cm-guide {
+  stroke: var(--interactive);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--easing-standard);
+}
+.cm-chart.has-focus .cm-guide { opacity: 0.8; }
+
+.cm-tip {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  z-index: 1;
+  min-width: 132px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--cffy-theme-surface-a0);
+  box-shadow: var(--shadow);
+  font-size: var(--text-caption);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--easing-standard);
+}
+.cm-chart-plot:has(.cm-chart.has-focus) .cm-tip { opacity: 1; }
+.cm-tip-head {
+  margin-bottom: 5px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: var(--text-supporting);
+  font-weight: 700;
+  color: var(--text);
+}
+.cm-tip-rows { display: flex; flex-direction: column; gap: 2px; }
+.cm-tip-row { display: flex; align-items: baseline; gap: 10px; }
+.cm-tip-label { flex: 1; color: var(--text-dim); }
+.cm-tip-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.cm-tip-row.is-gpa .cm-tip-value { color: var(--info); }
+.cm-tip-row.is-score .cm-tip-value { color: var(--warning); }
+
+/* ---------- 圖例兼開關 ---------- */
+.cm-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  font-size: var(--text-supporting);
+}
+.cm-legend-item {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font: inherit;
+  padding: 4px 9px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.cm-legend-item:hover { color: var(--text); border-color: var(--border); }
+.cm-legend-item:focus-visible { outline: var(--focus-ring); outline-offset: 1px; }
+/* 關掉的線: 圖例整條變淡並劃掉, 一眼看得出是自己關的而不是沒資料。 */
+.cm-legend-item.is-off { color: var(--text-dim); text-decoration: line-through; }
+.cm-legend-item.is-off::before { opacity: 0.3; }
+.cm-legend-item::before {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  content: "";
+}
+.cm-legend-item.is-gpa::before { background: var(--info); }
+.cm-legend-item.is-score::before { background: var(--warning); }
+.cm-legend-hint { margin-left: auto; color: var(--text-dim); font-size: var(--text-caption); }
+
+/* ---------- 各類學分占比 ---------- */
+
+.cm-pie-wrap {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  align-items: center;
+  padding: var(--space-4);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--card-bg-alt);
+}
+
+/* display: block 是必要的 —— inline SVG 底下會多出一條基線間隙,
+   疊在上面的 .cm-pie-centre 就對不準環圈的圓心。 */
+.cm-pie { display: block; width: 190px; height: 190px; }
+.cm-slice {
+  stroke: var(--card-bg-alt);
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: opacity var(--duration-fast) var(--easing-standard);
+}
+.cm-slice:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+/* 指到某一塊時其他塊變淡, 而不是把那一塊推出去 ——
+   環圈已經填滿容器, 推出去會被切掉。 */
+.cm-pie.has-active .cm-slice { opacity: 0.32; }
+.cm-pie .cm-slice.is-active {
+  opacity: 1;
+  stroke: var(--cffy-theme-light-a0);
+  stroke-width: 2;
+}
+/* 四類各一色。刻意不用語意色（成功／警告）, 這裡的顏色只是分類。 */
+.cm-slice-0 { fill: #4d8fd1; background: #4d8fd1; }
+.cm-slice-1 { fill: #68a357; background: #68a357; }
+.cm-slice-2 { fill: #c9683c; background: #c9683c; }
+.cm-slice-3 { fill: #8f6fb5; background: #8f6fb5; }
+
+/* 環圈中央的字疊在 SVG 上, 用 HTML 才能換行與截斷長類別名。 */
+.cm-pie-ring { position: relative; flex: 0 0 auto; }
+.cm-pie-centre {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  /* 只佔內圈那塊圓, 文字才不會壓到扇形上。 */
+  padding: 0 26%;
+  text-align: center;
+  pointer-events: none;
+}
+.cm-pie-total {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.cm-pie-unit {
+  font-size: var(--text-caption);
+  line-height: 1.3;
+  color: var(--text-muted);
+}
+.cm-pie-unit.is-detail { color: var(--text); font-weight: 600; }
+
+.cm-pie-legend {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 200px;
+}
+.cm-pie-item {
+  display: flex;
+  gap: 9px;
+  align-items: baseline;
+  font: inherit;
+  font-size: var(--text-supporting);
+  text-align: left;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+.cm-pie-item:hover { border-color: var(--border); }
+.cm-pie-item:focus-visible { outline: var(--focus-ring); outline-offset: 1px; }
+.cm-pie-item.is-active { border-color: var(--border); background: var(--cffy-theme-surface-a0); }
+/* 還沒有學分的類別不能點, 也不該看起來像能點。 */
+.cm-pie-item.is-empty { cursor: default; color: var(--text-dim); }
+.cm-pie-item.is-empty .cm-pie-dot { opacity: 0.35; }
+.cm-pie-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.cm-pie-name { flex: 1; }
+
+/* ---------- 學期分頁 ---------- */
+
+.cm-semtabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 4px;
+  margin-bottom: var(--space-3);
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+}
+.cm-semtab {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.cm-semtab:hover { background: var(--card-bg-alt); }
+.cm-semtab.is-active { border-color: var(--interactive); background: var(--surface-selected); }
+.cm-semtab-note { color: var(--text-muted); font-family: var(--font-mono); font-size: 10px; }
+
+/* ---------- 新增課程 ---------- */
+
+.cm-remove {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.cm-remove:hover { background: var(--card-bg-alt); color: var(--critical); }
+
+/* 表格裡的下拉選單要壓小, 不然一列變得比兩列還高。 */
+.cm-mini {
+  height: auto;
+  min-height: 0;
+  padding: 2px 6px;
+  font-size: 11px;
+}
+.cm-row-extra { margin-top: 3px; }
+
+.cm-picker {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--interactive);
+  border-radius: var(--radius);
+  background: var(--card-bg-alt);
+}
+.cm-picker-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: var(--space-2);
+  font-size: 13px;
+}
+.cm-picker-head .cm-remove { margin-left: auto; }
+
+.cm-picker-list {
+  /* 全校三千多門課, 清單一定要能捲, 而且要有高度上限。 */
+  overflow-y: auto;
+  max-height: 320px;
+  margin-top: var(--space-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+}
+.cm-picker-list > .tool-note {
+  margin: 0;
+  padding: 8px 10px;
+}
+
+.cm-picker-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  padding: 6px 10px;
+  border: 0;
+  border-bottom: 1px solid var(--border-soft);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+.cm-picker-row:last-child { border-bottom: 0; }
+.cm-picker-row:hover { background: var(--surface-selected); }
+
+.cm-picker-name { flex: 1; }
+.cm-picker-meta {
+  overflow: hidden;
+  max-width: 40%;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cm-picker-credit {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.cm-picker-add {
+  flex-shrink: 0;
+  color: var(--interactive);
+  font-weight: 700;
+}
+
+/* ---------- 同步 ---------- */
+
+.cm-steps { margin: 0 0 var(--space-3); padding-left: 1.4em; }
+.cm-steps li { font-size: 12px; line-height: 1.9; }
+
+.cm-code {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: var(--card-bg-alt);
+}
+.cm-board .cm-code .tool-actions { margin: 0; }
+.cm-code pre {
+  overflow: auto;
+  /* 這段程式碼很長, 給個高度上限, 不然整頁被它佔滿。 */
+  max-height: 240px;
+  margin: 0;
+  padding: 0;
+}
+.cm-code code {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+/* 窄畫面: 表格允許橫向捲, 不要把課名壓成一個字一行。 */
+@media (max-width: 620px) {
+  .cm-table { display: block; overflow-x: auto; white-space: nowrap; }
+  .cm-cards { grid-template-columns: repeat(2, 1fr); }
+}

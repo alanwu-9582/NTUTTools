@@ -1,0 +1,135 @@
+/* css/pages.css — 首頁、單一工具頁、404。 */
+
+/* ================= 首頁的招牌 ================= */
+.hero-card {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 26px 28px;
+  margin-bottom: 6px;
+}
+.hero-logo {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-soft);
+  background: var(--cffy-theme-surface-a20);
+  object-fit: contain;
+  padding: 10px;
+}
+.hero-body { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.hero-eyebrow {
+  margin: 0;
+  font-size: var(--text-caption);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.hero-title {
+  margin: 0;
+  font-size: clamp(26px, 1.4rem + 1.6vw, 38px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.hero-intro { margin: 0; color: var(--text-muted); font-size: 14.5px; }
+
+@media (max-width: 620px) {
+  .hero-card { flex-direction: column; align-items: flex-start; gap: 16px; padding: 20px; }
+  .hero-logo { width: 64px; height: 64px; }
+}
+
+/* ================= 首頁的分類標題 ================= */
+.cat-head { align-items: center; }
+.cat-head-main { display: flex; align-items: center; gap: 9px; min-width: 0; }
+/* 分類的顏色點。正圓是刻意的例外: 它就是一個色標。 */
+.cat-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--chip-color, var(--primary));
+}
+
+/* ================= 工具卡 ================= */
+.entry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+.entry-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  color: inherit;
+  min-width: 0;
+  transition: border-color var(--duration-fast) var(--easing-standard),
+              background var(--duration-fast) var(--easing-standard);
+}
+.entry-card:hover { border-color: var(--primary); background: var(--card-bg-alt); text-decoration: none; }
+.entry-card:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+.entry-card-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.entry-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.entry-card-ico {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+.entry-card:hover .entry-card-ico { color: var(--interactive); }
+.entry-card-desc {
+  margin: 0;
+  font-size: var(--text-supporting);
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ================= 單一工具頁 ================= */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+.back-link:hover { color: var(--text); text-decoration: none; }
+.back-link .back-ico { font-size: 16px; }
+
+.tool-head { margin-bottom: 28px; }
+.tool-head-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.tool-head .page-title { margin: 0; }
+.tool-head .page-sub { max-width: 68ch; margin-top: 8px; line-height: 1.65; }
+
+/* ================= 404 ================= */
+.not-found { text-align: center; padding-top: 40px; }
+.not-found-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}

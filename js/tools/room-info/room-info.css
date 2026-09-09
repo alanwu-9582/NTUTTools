@@ -1,0 +1,209 @@
+/* js/tools/room-info/room-info.css — 教室資訊。
+   顏色一律走 theme.css 的變數。 */
+
+.ri-board { display: flex; flex-direction: column; gap: 20px; }
+
+/* ================= 結果摘要 ================= */
+.ri-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: var(--text-label);
+  color: var(--text-muted);
+}
+.ri-count strong { color: var(--text); font-size: 16px; }
+
+/* ================= 教室清單 ================= */
+.ri-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+}
+.ri-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  text-align: left;
+  color: var(--text);
+  background: var(--card-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--easing-standard),
+              background var(--duration-fast) var(--easing-standard);
+}
+.ri-row:hover { border-color: var(--primary); background: var(--card-bg-alt); }
+.ri-row:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+
+.ri-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ri-row-name { font-weight: 700; font-size: var(--text-tool); overflow-wrap: anywhere; }
+.ri-row-full {
+  font-size: var(--text-supporting);
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ri-row-side {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  max-width: 46%;
+}
+.ri-seats {
+  font-family: var(--font-mono);
+  font-size: var(--text-supporting);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* 現在空著／有課。有課時填的是課名, 所以要能截斷。 */
+.ri-pill {
+  padding: 4px 9px;
+  border-radius: var(--radius-xs);
+  font-size: var(--text-supporting);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ri-pill.is-free {
+  color: var(--success);
+  background: rgba(var(--rgb-success), 0.12);
+  border: 1px solid rgba(var(--rgb-success), 0.32);
+}
+.ri-pill.is-busy {
+  color: var(--text-muted);
+  background: var(--card-bg-alt);
+  border: 1px solid var(--border);
+}
+
+.ri-more { display: flex; justify-content: center; margin-top: 12px; }
+
+/* ================= 單一教室 ================= */
+.ri-detail { display: flex; flex-direction: column; gap: 20px; }
+
+.ri-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 7px;
+  margin-left: -7px;
+  font: inherit;
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+}
+.ri-back:hover { color: var(--text); background: var(--card-bg-alt); }
+.ri-back:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+.ri-back-ico { font-size: 15px; }
+
+.ri-detail-head { display: flex; flex-direction: column; gap: 3px; }
+.ri-detail-name { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.2; }
+.ri-detail-full { font-size: var(--text-label); color: var(--text-muted); }
+.ri-detail-stats { font-size: var(--text-supporting); color: var(--text-dim); }
+
+/* 現在是不是空的 —— 進到這一頁最想知道的一件事, 所以放最上面。 */
+.ri-now {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--cffy-theme-surface-a0);
+}
+.ri-now.is-free { border-color: rgba(var(--rgb-success), 0.32); }
+.ri-now-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ri-now-when { font-size: var(--text-supporting); color: var(--text-dim); }
+.ri-now-body { font-size: var(--text-label); color: var(--text-muted); line-height: 1.6; }
+.ri-now.is-free .ri-now-body { color: var(--text); }
+
+/* ---------- 空堂區間 ---------- */
+.ri-free-days { display: flex; flex-direction: column; gap: 4px; }
+.ri-free-day {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border-soft);
+}
+.ri-free-day:last-child { border-bottom: none; }
+.ri-free-label {
+  flex: 0 0 44px;
+  font-size: var(--text-label);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.ri-free-chips { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+.ri-free-none { font-size: var(--text-supporting); color: var(--text-dim); }
+.ri-chip {
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  font-size: var(--text-supporting);
+  font-weight: 600;
+  color: var(--cffy-theme-primary-a40);
+  background: rgba(var(--rgb-primary-light), 0.14);
+  border: 1px solid rgba(var(--rgb-primary-light), 0.3);
+  white-space: nowrap;
+}
+
+/* ================= 大樓分組 ================= */
+/* 231 間教室平鋪成一片時眼睛沒有落腳處, 分組之後才看得出「二教空幾間」。 */
+.ri-groups { display: flex; flex-direction: column; gap: 18px; }
+.ri-group { display: flex; flex-direction: column; gap: 8px; }
+.ri-group-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: var(--text-label);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.ri-group-count { font-size: var(--text-caption); font-weight: 600; color: var(--text-dim); }
+
+/* ================= 多時段查詢 ================= */
+.ri-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--cffy-theme-surface-a0);
+}
+.ri-slots-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: var(--text-label);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.ri-slots-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ---------- 挑時段的對話框 ---------- */
+.ri-picker { display: flex; flex-direction: column; gap: 14px; }
+.ri-picker-foot { display: flex; gap: 10px; justify-content: flex-end; width: 100%; }
+
+@media (max-width: 560px) {
+  .ri-list { grid-template-columns: 1fr; }
+  .ri-detail-name { font-size: 19px; }
+}
+
+@media (pointer: coarse) {
+  .ri-row { min-height: var(--hit-min); }
+}
