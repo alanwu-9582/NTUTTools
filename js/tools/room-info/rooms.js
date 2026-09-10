@@ -12,7 +12,19 @@ const minutesOf = (time) => {
   return h * 60 + m;
 };
 
+/** 給「重新載入資料」用: 它要知道去抓哪一個檔。 */
+export const ROOMS_URL = DATA_URL;
+
 let pending = null;
+
+/** 建索引。載入與重新載入都走這裡, 兩條路才不會長出不一樣的資料形狀。 */
+function index(data) {
+  return {
+    ...data,
+    periodAt: new Map(data.periods.map((period, at) => [period.key, at])),
+    roomByCode: new Map(data.rooms.map((room) => [room.code, room])),
+  };
+}
 
 /** 載入並索引課表。同一頁裡只會真的抓一次。 */
 export function loadRooms() {
@@ -22,14 +34,20 @@ export function loadRooms() {
         if (!response.ok) throw new Error(`讀不到教室課表（HTTP ${response.status}）`);
         return response.json();
       })
-      .then((data) => ({
-        ...data,
-        periodAt: new Map(data.periods.map((period, at) => [period.key, at])),
-        roomByCode: new Map(data.rooms.map((room) => [room.code, room])),
-      }))
+      .then(index)
       .catch((error) => { pending = null; throw error; });
   }
   return pending;
+}
+
+/**
+ * 用剛抓回來的資料換掉模組快取。
+ * 重新載入時外面已經抓過（而且是 cache: "reload" 那一次）, 這裡不要再抓。
+ */
+export function adoptRooms(raw) {
+  const data = index(raw);
+  pending = Promise.resolve(data);
+  return data;
 }
 
 /** 某間教室在某一格上的課。空堂就是空陣列。 */

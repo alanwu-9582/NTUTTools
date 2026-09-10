@@ -25,7 +25,7 @@
     {
       "id": "credit-master",
       "title": "學分大師",
-      "description": "手動輸入分數, 計算 GPA 與各類學分, 逐項對照畢業門檻。",
+      "description": "選入學學年度、學程與系所組, 填成績算 GPA 與各類學分, 逐項對照畢業門檻。",
       "category": "grade",
       "tags": [
         "credit",

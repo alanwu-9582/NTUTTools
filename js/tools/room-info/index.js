@@ -12,13 +12,14 @@ import {
 } from "../kit.js";
 import { normalizeText, debounce, highlightTerms, queryTerms } from "../../utils/utils.js";
 import { openModal, closeModal } from "../../ui/modal.js";
+import { refreshControl } from "../../services/data-refresh.js";
 import {
   timetable, timetablePicker, timetableStyles, timetableLegend,
   DAY_LABELS, DAY_ORDER, periodLabel, slotKey,
 } from "../timetable.js";
 import {
-  loadRooms, entriesAt, isFree, currentSlot, freeRooms, freeRoomsAtAll, freeRanges,
-  usage, courseLine, byBuilding, sortSlots, slotLabel,
+  loadRooms, adoptRooms, ROOMS_URL, entriesAt, isFree, currentSlot, freeRooms,
+  freeRoomsAtAll, freeRanges, usage, courseLine, byBuilding, sortSlots, slotLabel,
 } from "./rooms.js";
 
 export const styles = [timetableStyles, new URL("./room-info.css", import.meta.url).href];
@@ -45,7 +46,9 @@ export async function mount(host, { params, setParams } = {}) {
     return null;
   }
 
-  const now = currentSlot(data);
+  // 用可就地更新的物件: 重新載入資料之後要重算「現在」是哪一格,
+  // 但畫面上到處都閉包住了這個 now。
+  const now = { ...currentSlot(data) };
   const state = {
     mode: params?.get("mode") === "free" ? "free" : "rooms",
     query: params?.get("q") || "",
@@ -464,14 +467,28 @@ export async function mount(host, { params, setParams } = {}) {
     syncUrl();
   }
 
+  const refresh = refreshControl({
+    items: () => [{ url: ROOMS_URL, label: "教室課表" }],
+    onDone: ([raw]) => {
+      data = adoptRooms(raw);
+      // 換了資料就重新算「現在」是哪一格 —— 節次表理論上不會變, 但
+      // 使用者可能已經開著這一頁跨過了一節課。
+      Object.assign(now, currentSlot(data));
+      // 選到的教室是舊物件, 用代號重新指到新的那一份。
+      if (state.room) state.room = data.roomByCode.get(state.room.code) || null;
+      paint();
+    },
+  });
+
   host.appendChild(panel(
     row(field("查詢方式", modeTabs)),
     board,
     info,
+    refresh,
     note(
       "資料取自北科大 ",
       el("a", { href: data.source, target: "_blank", rel: "noopener" }, "教室使用情形一覽表"),
-      "。實際借用狀況以教務處公告為準。",
+      "。實際借用狀況以教務處公告為準。「重新載入資料」抓的是本站最新已發佈的快照。",
     ),
   ));
 

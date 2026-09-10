@@ -1,15 +1,20 @@
 // js/tools/credit-master/index.js — 學分大師。
 //
-// 北科大工程科技學士班【材資系材料組】的成績與畢業學分管理。自己加課、填分數, 
-// 算 GPA 與各類學分, 並逐項對照畢業門檻（含「幾選幾」、通識博雅三向度、
-// 基礎實驗課程）。
+// 全校的成績與畢業學分管理。先選入學學年度 → 學制 → 系所組, 之後自己加課、
+// 填分數, 算 GPA 與各類學分, 並逐項對照畢業門檻（含「幾選幾」、通識博雅
+// 三向度、基礎實驗課程）。
 //
-// 兩份資料:
-//   data/ntut-curriculum.json  自己的課程科目表 + 畢業門檻（一開就載）
-//   data/ntut-courses.json     全校 3000 多門課, 給「新增課程」挑（用到才載）
+// 三份資料:
+//   data/curricula/index.json            學年度／學制／系所組的目錄（一開就載）
+//   data/curricula/<年>/<學制>/<組>.json  那一張課程科目表（選到才載）
+//   data/ntut-courses.json               全校 3000 多門課, 給「新增課程」挑（用到才載）
 //
-// 兩份都是 tools/build-{curriculum,courses}.mjs 從學校網站抓的快照 ——
-// 學分數與幾選幾的組合都不是寫死在程式裡。
+// 都是 tools/build-{curricula,courses}.mjs 從學校網站抓的快照 —— 學分數與
+// 幾選幾的組合都不是寫死在程式裡。
+//
+// 不是每一張表都有畢業門檻: 學程、第二專長、微學程那些只有課表, 沒有
+// 「最低畢業學分」。那時候畢業進度整塊都不畫, 改成只顯示課表與學校的
+// 規定事項原文 —— 硬把 0 當成門檻會算出「已經畢業」這種假答案。
 
 import {
   panel, row, field, segmented, button, numberInput, textInput, select,
@@ -17,6 +22,7 @@ import {
 } from "../kit.js";
 import { s } from "../svg.js";
 import { notify } from "../../ui/notifications.js";
+import { refreshControl } from "../../services/data-refresh.js";
 import { summarise, SCALE_KEYS } from "./grades.js";
 import {
   loadLocal, saveLocal, clearLocal, readSheet, pullFromScript, pushToScript,
@@ -27,8 +33,14 @@ export const styles = new URL("./credit-master.css", import.meta.url).href;
 
 export const meta = { title: "學分大師" };
 
-const CURRICULUM_URL = new URL("../../../data/ntut-curriculum.json", import.meta.url).href;
+const CATALOG_URL = new URL("../../../data/curricula/index.json", import.meta.url).href;
 const POOL_URL = new URL("../../../data/ntut-courses.json", import.meta.url).href;
+
+/** 一張課程科目表的網址。代號只會是英數, builder 已經擋過。 */
+const curriculumUrl = (pick) => new URL(
+  `../../../data/curricula/${pick.year}/${pick.matric}/${pick.division}.json`,
+  import.meta.url,
+).href;
 
 /** 課表比對用的鍵。同一學期同名課程不會重複, 所以這樣就夠。 */
 const keyOf = (semester, name) => `${semester}|${name}`;
@@ -36,6 +48,8 @@ const keyOf = (semester, name) => `${semester}|${name}`;
 const blankState = () => ({
   entries: [], ranks: {},
   scale: "4.3", includeFailed: true, sheetUrl: "", scriptUrl: "",
+  // { year, matric, division } —— 選過就記住, 下次直接開那一張課表。
+  pick: null,
 });
 
 const round = (value, digits = 2) => {
@@ -53,12 +67,17 @@ const CATEGORY_OPTIONS = [
 ];
 
 export async function mount(host) {
+  let catalog = null;
   let curriculum = null;
   let pool = null;
   let state = { ...blankState(), ...(loadLocal() || {}) };
   let view = "summary";
   let openSemester = null;
   let picker = null;   // { source, query } 開著的時候才有值
+
+  // 換課表時要跟著重建的索引。
+  let bySemester = new Map();
+  let curriculumIndex = new Map();
 
   // 圖表的互動狀態。放在 mount 這一層, 重畫（換 GPA 級距、加課）之後
   // 使用者剛剛切掉的線與釘住的那一塊還在。
@@ -69,25 +88,57 @@ export async function mount(host) {
   const info = status();
   const board = el("div", { class: "cm-board" });
 
-  /* ---------- 課程科目表 ---------- */
+  /* ---------- 課程標準目錄 ---------- */
   try {
-    const response = await fetch(CURRICULUM_URL);
+    const response = await fetch(CATALOG_URL);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    curriculum = await response.json();
+    catalog = await response.json();
   } catch (error) {
     host.appendChild(panel(
-      el("div", { class: "banner banner-danger" }, `讀不到課程標準: ${error.message}`),
+      el("div", { class: "banner banner-danger" }, `讀不到課程標準目錄: ${error.message}`),
     ));
     return null;
   }
 
-  openSemester = curriculum.semesters[0];
+  /**
+   * 這一組選擇在目錄裡還在嗎。存下來的選擇可能因為重抓而消失
+   * （學校把某個組收掉、或改了代號）, 那就當成沒選過。
+   */
+  function resolvePick(pick) {
+    if (!pick) return null;
+    const year = catalog.years.find((item) => item.year === Number(pick.year));
+    const program = year?.programs.find((item) => item.matric === pick.matric);
+    const division = program?.divisions.find((item) => item.code === pick.division);
+    if (!division) return null;
+    return { year, program, division };
+  }
 
-  const bySemester = new Map(curriculum.semesters.map((label) => [label, []]));
-  for (const course of curriculum.courses) bySemester.get(course.semester)?.push(course);
-  const curriculumIndex = new Map(
-    curriculum.courses.map((course) => [keyOf(course.semester, course.name), course]),
-  );
+  /** 把新的課表接上去: 重建索引, 學期下拉拉回這張表的第一學期。 */
+  function adoptCurriculum(next) {
+    curriculum = next;
+    bySemester = new Map(curriculum.semesters.map((label) => [label, []]));
+    for (const course of curriculum.courses) bySemester.get(course.semester)?.push(course);
+    curriculumIndex = new Map(
+      curriculum.courses.map((course) => [keyOf(course.semester, course.name), course]),
+    );
+    if (!curriculum.semesters.includes(openSemester)) openSemester = curriculum.semesters[0];
+    picker = null;
+  }
+
+  /**
+   * 換一張課程科目表。載入失敗時保留原本那張並回報, 不要把畫面清空 ——
+   * 使用者填的成績還在, 突然一片空白會以為資料掉了。
+   */
+  async function switchTo(pick) {
+    const response = await fetch(curriculumUrl(pick));
+    if (!response.ok) throw new Error(`讀不到課程標準（HTTP ${response.status}）`);
+    adoptCurriculum(await response.json());
+    state.pick = { year: pick.year, matric: pick.matric, division: pick.division };
+    save();
+  }
+
+  /** 有沒有畢業門檻。沒有的話畢業進度那一整塊都不畫。 */
+  const hasGraduation = () => curriculum?.requirements?.total != null;
 
   /**
    * 全校課程清單。321 KB, 只有按下「新增課程」才載 ——
@@ -158,6 +209,14 @@ export async function mount(host) {
   }
 
   function setStatus(result) {
+    if (!curriculum) {
+      const total = catalog.years.reduce(
+        (sum, year) => sum + year.programs.reduce((n, program) => n + program.divisions.length, 0),
+        0,
+      );
+      info.set(`${catalog.years.length} 個學年度・${total} 個系所組　·　目錄抓取日 ${catalog.generated}`, "ok");
+      return;
+    }
     info.set(
       `${curriculum.program.heading}　·　課程標準抓取日 ${curriculum.generated}`
       + `　·　已輸入 ${result.overall.graded} 科`
@@ -302,15 +361,39 @@ export async function mount(host) {
         el("div", { class: "cm-blockers-head" }, `還差 ${result.blockers.length} 項`),
         el("ul", {}, ...result.blockers.map((text) => el("li", {}, text))));
 
+    // 學程、第二專長、微學程那些表沒有「最低畢業學分」, 硬畫進度條
+    // 只會得到一堆 0/0 全部達標的假畫面, 所以整塊跳過。
+    const grad = hasGraduation();
     return el("div", {},
-      cards, blockers,
-      subhead("畢業門檻"), thresholds,
-      subhead("必選修群組"), picks,
-      subhead("通識博雅"), liberal,
-      subhead("其他門檻"), others,
+      cards,
+      grad ? blockers : null,
+      grad ? subhead("畢業門檻") : null, grad ? thresholds : null,
+      grad && result.picks.length ? subhead("必選修群組") : null,
+      grad && result.picks.length ? picks : null,
+      grad && result.liberal.need ? subhead("通識博雅") : null,
+      grad && result.liberal.need ? liberal : null,
+      grad && (result.coreLabs || result.mustPass.length) ? subhead("其他門檻") : null,
+      grad && (result.coreLabs || result.mustPass.length) ? others : null,
       subhead("各學期"), semesterTable,
       subhead("歷年趨勢"), trendChart(result),
       subhead("各類學分占比"), creditPie(result),
+      curriculum.rules ? subhead("學校的規定事項") : null,
+      curriculum.rules ? rulesBlock() : null,
+    );
+  }
+
+  /**
+   * 學校規定事項的原文。
+   *
+   * 解析得出結構的部分上面都畫成進度了, 但解析不出來的（英文畢業門檻、
+   * 校外實習抵免、中五生加修…）只有這段文字說得清楚, 而沒有畢業門檻的
+   * 課表更是只剩這一段可看。預設收起來, 它很長。
+   */
+  function rulesBlock() {
+    const body = el("p", { class: "cm-rules-text" }, curriculum.rules);
+    return el("details", { class: "cm-rules-raw" },
+      el("summary", {}, "展開原文"),
+      body,
     );
   }
 
@@ -1016,13 +1099,27 @@ export async function mount(host) {
   const failedToggle = el("div", { class: "tool-segmented cm-seg" }, failedButton);
 
   function paint() {
+    // 上一輪的節點都要丟掉了, 參考也一起清掉, 免得抓著已經不在畫面上的東西。
+    liveRows = [];
+    liveSemesterSelect = null;
+
+    // 還沒選課表: 檢視／GPA 級距那排先收起來, 對著空白調級距沒有意義。
+    if (!curriculum) {
+      viewRow.hidden = true;
+      board.replaceChildren(el("div", { class: "state-block" },
+        el("span", { class: "ico", html: icon("book", { size: "32px" }) }),
+        el("div", { class: "st-title" }, "請先選擇課程標準"),
+        el("div", { class: "st-msg" }, "上面依序選入學學年度、學程與系所組, 就會載入那一張課程科目表。"),
+      ));
+      setStatus(null);
+      return;
+    }
+    viewRow.hidden = false;
+
     const result = summarise(namedEntries(), curriculum, {
       includeFailed: state.includeFailed,
       ranks: state.ranks,
     });
-    // 上一輪的節點都要丟掉了, 參考也一起清掉, 免得抓著已經不在畫面上的東西。
-    liveRows = [];
-    liveSemesterSelect = null;
     board.replaceChildren(
       view === "summary" ? renderSummary(result)
         : view === "input" ? renderInput(result)
@@ -1031,23 +1128,149 @@ export async function mount(host) {
     setStatus(result);
   }
 
+  const viewRow = row(
+    field("檢視", viewTabs),
+    field("GPA 級距", scaleTabs),
+    field("平均分數", failedToggle),
+  );
+
+  /* ---------- 課程標準選擇器 ---------- */
+
+  // 三個下拉會互相牽動, 各自放一個容器讓它重建就好, 不用整塊重畫。
+  const yearSlot = el("div", { class: "cm-pick-slot" });
+  const matricSlot = el("div", { class: "cm-pick-slot" });
+  const divisionSlot = el("div", { class: "cm-pick-slot" });
+  // 目前正在選的（還沒按下去載入的）。載入成功才寫進 state.pick。
+  const draft = { year: "", matric: "", division: "" };
+
+  const yearOf = (value) => catalog.years.find((item) => item.year === Number(value)) || null;
+  const programOf = (year, matric) => year?.programs.find((item) => item.matric === matric) || null;
+
+  function paintPicker() {
+    const year = yearOf(draft.year);
+    const program = programOf(year, draft.matric);
+
+    const yearSelect = select({
+      options: [
+        { value: "", label: "請選擇學年度" },
+        ...catalog.years.map((item) => ({ value: String(item.year), label: `${item.year} 學年度入學` })),
+      ],
+      value: draft.year,
+      onChange: () => {
+        draft.year = yearSelect.value;
+        // 學制與系所組的代號在不同學年度不保證一樣, 一律清掉重選。
+        draft.matric = "";
+        draft.division = "";
+        paintPicker();
+      },
+    });
+    yearSlot.replaceChildren(yearSelect);
+
+    const matricSelect = select({
+      options: [
+        { value: "", label: year ? "請選擇學程" : "請先選擇學年度" },
+        ...(year?.programs || []).map((item) => ({ value: item.matric, label: item.name })),
+      ],
+      value: draft.matric,
+      onChange: () => {
+        draft.matric = matricSelect.value;
+        draft.division = "";
+        paintPicker();
+      },
+    });
+    matricSelect.disabled = !year;
+    matricSlot.replaceChildren(matricSelect);
+
+    const divisionSelect = select({
+      options: [
+        { value: "", label: program ? "請選擇系所組" : "請先選擇學程" },
+        ...(program?.divisions || []).map((item) => ({ value: item.code, label: item.name })),
+      ],
+      value: draft.division,
+      onChange: async () => {
+        draft.division = divisionSelect.value;
+        if (!draft.division) { paintPicker(); return; }
+        divisionSelect.disabled = true;
+        try {
+          await switchTo({ year: draft.year, matric: draft.matric, division: draft.division });
+          paint();
+        } catch (error) {
+          notify.danger(error.message);
+          divisionSelect.disabled = false;
+        }
+      },
+    });
+    divisionSelect.disabled = !program;
+    divisionSlot.replaceChildren(divisionSelect);
+  }
+
+  const refresh = refreshControl({
+    // 目錄一定要重抓；已經選了課表的話連那一張一起。
+    items: () => [
+      { url: CATALOG_URL, label: "課程標準目錄" },
+      ...(state.pick ? [{ url: curriculumUrl(state.pick), label: "課程科目表" }] : []),
+    ],
+    onDone: ([nextCatalog, nextCurriculum]) => {
+      catalog = nextCatalog;
+      if (nextCurriculum) adoptCurriculum(nextCurriculum);
+      // 重抓後那個組可能不見了（學校收掉或改代號）, 那就退回沒選的狀態。
+      if (state.pick && !resolvePick(state.pick)) {
+        state.pick = null;
+        curriculum = null;
+        save();
+        notify.warning("你原本選的系所組在最新的課程標準裡找不到了, 請重新選擇。");
+      }
+      paintPicker();
+      paint();
+    },
+  });
+
   host.appendChild(panel(
+    subhead("課程標準"),
     row(
-      field("檢視", viewTabs),
-      field("GPA 級距", scaleTabs),
-      field("平均分數", failedToggle),
+      field("入學學年度", yearSlot),
+      field("學程", matricSlot),
+      field("系所組", divisionSlot),
     ),
+    viewRow,
     board,
     info,
+    refresh,
     note(
       "課程與畢業門檻取自北科大 ",
-      el("a", { href: curriculum.source, target: "_blank", rel: "noopener" }, "課程標準"),
-      "。目前的課表是 ",
-      el("strong", {}, curriculum.program.heading.replace(" 課程科目表", "")),
-      ", 「新增課程」可以挑全校任何一門課。",
+      el("a", {
+        href: curriculum?.source || `${catalog.source}`,
+        target: "_blank",
+        rel: "noopener",
+      }, "課程標準"),
+      "。「新增課程」可以挑全校任何一門課。",
+      "「重新載入資料」抓的是本站最新已發佈的快照。",
     ),
   ));
 
+  /* ---------- 開場 ---------- */
+
+  // 上次選過就直接開那一張；沒有就停在選擇器, 不亂猜一個系所組給人看。
+  const saved = resolvePick(state.pick);
+  if (saved) {
+    Object.assign(draft, {
+      year: String(saved.year.year),
+      matric: saved.program.matric,
+      division: saved.division.code,
+    });
+    try {
+      await switchTo({ year: draft.year, matric: draft.matric, division: draft.division });
+    } catch (error) {
+      console.warn(error);
+      notify.warning("讀不到上次選的課程標準, 請重新選擇。");
+    }
+  } else if (state.pick) {
+    // 存著的選擇已經不在目錄裡了。
+    state.pick = null;
+    save();
+  }
+
+  paintPicker();
   paint();
   return null;
 }

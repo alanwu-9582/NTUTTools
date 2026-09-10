@@ -4,7 +4,7 @@
 // 「相關規定事項」。兩邊都要用: 表格給課程與類別, 規定事項給畢業門檻與
 // 「幾選幾」的規則。
 //
-// 這支不碰 DOM, tools/build-curriculum.mjs（Node）直接 import 它 ——
+// 這支不碰 DOM, tools/build-curricula.mjs（Node）直接 import 它 ——
 // 學校網站沒有回 CORS 標頭, 瀏覽器抓不到, 所以一定得在建置階段抓好存成快照。
 //
 // 刻意不把門檻寫死在程式裡。學分數、幾選幾的組合、博雅向度全都從網頁的

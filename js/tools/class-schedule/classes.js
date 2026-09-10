@@ -23,7 +23,22 @@ export const isRequired = (req) => "○△●▲".includes(req);
 /** 沒有掛在任何學院底下的系所（教務處、體育室、通識中心…）。 */
 const NO_COLLEGE = "校級單位";
 
+/** 給「重新載入資料」用: 它要知道去抓哪一個檔。 */
+export const CLASSES_URL = DATA_URL;
+
 let pending = null;
+
+/** 建索引。載入與重新載入都走這裡, 兩條路才不會長出不一樣的資料形狀。 */
+function index(data) {
+  return {
+    ...data,
+    deptByCode: new Map(data.depts.map((dept) => [dept.code, dept])),
+    classByCode: new Map(data.classes.map((item) => [item.code, item])),
+    // 課表頁沒有節次時間表（它在頁尾另一個小表格裡）, 這裡自己定義,
+    // 順序與代號都跟 data/ntut-rooms.json 一致。
+    periods: PERIODS,
+  };
+}
 
 /** 載入並索引班級課表。同一頁裡只會真的抓一次。 */
 export function loadClasses() {
@@ -33,20 +48,20 @@ export function loadClasses() {
         if (!response.ok) throw new Error(`讀不到班級課表（HTTP ${response.status}）`);
         return response.json();
       })
-      .then((data) => {
-        const deptByCode = new Map(data.depts.map((dept) => [dept.code, dept]));
-        return {
-          ...data,
-          deptByCode,
-          classByCode: new Map(data.classes.map((item) => [item.code, item])),
-          // 課表頁沒有節次時間表（它在頁尾另一個小表格裡）, 這裡自己定義,
-          // 順序與代號都跟 data/ntut-rooms.json 一致。
-          periods: PERIODS,
-        };
-      })
+      .then(index)
       .catch((error) => { pending = null; throw error; });
   }
   return pending;
+}
+
+/**
+ * 用剛抓回來的資料換掉模組快取。
+ * 重新載入時外面已經抓過（而且是 cache: "reload" 那一次）, 這裡不要再抓。
+ */
+export function adoptClasses(raw) {
+  const data = index(raw);
+  pending = Promise.resolve(data);
+  return data;
 }
 
 /**

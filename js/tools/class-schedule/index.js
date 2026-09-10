@@ -8,9 +8,10 @@
 import { panel, row, field, select, textInput, status, note, el, icon } from "../kit.js";
 import { normalizeText, debounce, highlightTerms, queryTerms } from "../../utils/utils.js";
 import { timetable, timetableStyles, timetableLegend } from "../timetable.js";
+import { refreshControl } from "../../services/data-refresh.js";
 import {
-  loadClasses, coursesOf, gridOf, deptLabel, byCollege, colleges, collegeOf, depts,
-  totals, slotText, REQ_LABELS, isRequired,
+  loadClasses, adoptClasses, CLASSES_URL, coursesOf, gridOf, deptLabel, byCollege,
+  colleges, collegeOf, depts, totals, slotText, REQ_LABELS, isRequired,
 } from "./classes.js";
 
 export const styles = [timetableStyles, new URL("./class-schedule.css", import.meta.url).href];
@@ -227,13 +228,24 @@ export async function mount(host, { params, setParams } = {}) {
     syncUrl();
   }
 
+  const refresh = refreshControl({
+    items: () => [{ url: CLASSES_URL, label: "班級課表" }],
+    onDone: ([raw]) => {
+      data = adoptClasses(raw);
+      // 選到的班級是舊物件, 用代號重新指到新的那一份。
+      if (state.item) state.item = data.classByCode.get(state.item.code) || null;
+      paint();
+    },
+  });
+
   host.appendChild(panel(
     board,
     info,
+    refresh,
     note(
       "資料取自北科大 ",
       el("a", { href: data.source, target: "_blank", rel: "noopener" }, "上課時間表"),
-      "。加退選後的異動以課程系統為準。",
+      "。加退選後的異動以課程系統為準。「重新載入資料」抓的是本站最新已發佈的快照。",
     ),
   ));
 
