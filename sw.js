@@ -70,7 +70,7 @@ const SHELL = [
   "data/tools.json",
   "data/ntut-rooms.json",
   "data/ntut-classes.json",
-  "data/curricula/index.json",
+  "data/ntut-curriculum.json",
   "data/ntut-courses.json",
   "assets/images/icon.png",
   "assets/icons/alert.svg",

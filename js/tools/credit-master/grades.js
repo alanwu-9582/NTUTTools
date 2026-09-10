@@ -244,7 +244,7 @@ function coreLabProgress(rows, curriculum) {
  * 全部算完。
  *
  * @param {Array} entries 使用者輸入的成績
- * @param {object} curriculum data/curricula/<年>/<學制>/<組>.json
+ * @param {object} curriculum data/ntut-curriculum.json
  * @param {{includeFailed?: boolean, ranks?: object}} options
  */
 export function summarise(entries, curriculum, { includeFailed = true, ranks = {} } = {}) {

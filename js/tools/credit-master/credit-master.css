@@ -568,10 +568,6 @@
   .cm-cards { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* ---------- 課程標準選擇器 ---------- */
-/* 三個下拉會互相牽動、各自重建, 這個容器讓它在 .tool-field 格線裡佔一整格。 */
-.cm-pick-slot { display: block; min-width: 0; }
-
 /* ---------- 學校規定事項原文 ---------- */
 .cm-rules-raw {
   border: 1px solid var(--border-soft);
